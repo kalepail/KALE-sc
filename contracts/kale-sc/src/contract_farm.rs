@@ -198,10 +198,11 @@ impl FarmTrait for Contract {
             &env,
             &(BLOCK_REWARD + block.staked_total),
             &block.normalized_total.max(1),
-        ) + stake;
+        );
+        let reward_and_stake = reward + stake;
 
-        if reward > 0 {
-            token::StellarAssetClient::new(&env, &asset).mint(&farmer, &reward);
+        if reward_and_stake > 0 {
+            token::StellarAssetClient::new(&env, &asset).mint(&farmer, &reward_and_stake);
         }
 
         remove_pail(&env, farmer.clone(), index);
