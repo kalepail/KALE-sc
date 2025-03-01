@@ -4,13 +4,10 @@ use std::{print, println};
 extern crate std;
 
 use crate::{
-    errors::Errors,
-    tests::utils::find_nonce_and_hash,
-    types::{Block, Storage},
-    Contract, ContractClient, BLOCK_INTERVAL,
+    errors::Errors, tests::utils::find_nonce_and_hash, types::{Block, Storage}, Contract, ContractClient, BLOCK_INTERVAL
 };
 use soroban_sdk::{
-    testutils::{Address as _, EnvTestConfig, Ledger},
+    testutils::{Address as _, BytesN as _, EnvTestConfig, Ledger},
     token, Address, BytesN, Env,
 };
 
@@ -203,4 +200,83 @@ fn test() {
         println!("{:?}", index);
         println!("{:?}", block);
     });
+}
+
+#[test]
+#[ignore = "set BLOCKS_PER_MONTH to 10 first"]
+fn test_decay() {
+    let mut env: Env = Env::default();
+
+    env.set_config(EnvTestConfig {
+        capture_snapshot_at_drop: false,
+    });
+
+    env.ledger().set_min_temp_entry_ttl(17280);
+    env.ledger().set_min_persistent_entry_ttl(2073600);
+
+    env.mock_all_auths();
+
+    let timestamp = env.ledger().timestamp();
+
+    let homesteader: Address = Address::generate(&env);
+
+    let asset_sac = env.register_stellar_asset_contract_v2(homesteader.clone());
+    let asset_address = asset_sac.address();
+    let asset_homesteader = token::StellarAssetClient::new(&env, &asset_address);
+
+    let farm_address: Address = env.register(Contract, (&homesteader, &asset_address));
+    let farm_client = ContractClient::new(&env, &farm_address);
+
+    asset_homesteader.set_admin(&farm_address);
+
+    let farmer_1: Address = Address::generate(&env);
+        
+    let iterations = 100;
+
+    env.cost_estimate().budget().reset_unlimited();
+
+    for i in 0..iterations {
+        env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (i + 2) as u64);
+        farm_client.plant(&farmer_1, &0);
+    }
+
+    farm_client.work(&farmer_1, &BytesN::random(&env), &0);
+
+    let mut index: u32 = 0;
+
+    env.as_contract(&farm_address, || {
+        index = env
+            .storage()
+            .instance()
+            .get::<Storage, u32>(&Storage::FarmIndex)
+            .unwrap();
+
+        println!("FarmIndex {:?}", index);
+    });
+
+    env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (iterations + 2) as u64);
+    farm_client.plant(&farmer_1, &0);
+
+    env.cost_estimate().budget().reset_unlimited();
+
+    let reward = farm_client.harvest(&farmer_1, &index);
+
+    // 100 iterations
+    // InvocationResources {
+    //     instructions: 323615,
+    //     mem_bytes: 117879,
+    //     read_entries: 4,
+    //     write_entries: 2,
+    //     read_bytes: 2144,
+    //     write_bytes: 224,
+    //     contract_events_size_bytes: 232,
+    //     persistent_rent_ledger_bytes: 0,
+    //     persistent_entry_rent_bumps: 0,
+    //     temporary_rent_ledger_bytes: 0,
+    //     temporary_entry_rent_bumps: 0,
+    // }
+
+    println!("{:#?}", env.cost_estimate().resources());
+
+    println!("Reward {:?}", reward);
 }

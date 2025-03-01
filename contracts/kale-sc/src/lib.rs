@@ -13,8 +13,12 @@ mod types;
 // Too low and the network could be congested
 // Too high and there's too much time for fast miners to dominate
 pub const BLOCK_INTERVAL: u64 = 60 * 5; // In seconds
-pub const BLOCK_REWARD: i128 = 1_0000000 * BLOCK_INTERVAL as i128 / 60; // base_per_minute * second_interval / seconds_per_minute
+pub const BLOCK_REWARD: i128 = 1000_0000000 * BLOCK_INTERVAL as i128 / 60; // base_per_minute * second_interval / seconds_per_minute
 pub const WEEK_OF_LEDGERS: u32 = 60 * 60 * 24 / 5 * 7; // assumes 5 second ledger close times
+pub const BLOCKS_PER_MONTH: u32 = 24 * 60 / 5 * 30; // 24 hours * 60 minutes / 5 seconds * 30 days
+pub const SCALE: i128 = 100_00000000; // 100% // 10 zeros because our max block reward is BLOCK_REWARD (10 zeros)
+pub const DECAY_RATE: i128 = 5_00000000; // 5%
+pub const V2_FARM_INDEX: u32 = 30_000; // TODO confirm before upgrade (29188 at time of writing)
 
 // TODO add more comments
 
