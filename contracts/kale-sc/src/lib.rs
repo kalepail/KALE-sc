@@ -17,7 +17,7 @@ pub const BLOCK_REWARD: i128 = 1000_0000000 * BLOCK_INTERVAL as i128 / 60; // ba
 pub const WEEK_OF_LEDGERS: u32 = 60 * 60 * 24 / 5 * 7; // assumes 5 second ledger close times
 pub const BLOCKS_PER_MONTH: u32 = 24 * 60 / 5 * 30; // 24 hours * 60 minutes / 5 seconds * 30 days
 pub const SCALE: i128 = 100_00000000; // 100% // 10 zeros because our max block reward is BLOCK_REWARD (10 zeros)
-pub const DECAY_RATE: i128 = 5_00000000; // 5%
+pub const DECAY_RATE: i128 = 10_00000000; // 10%
 pub const V2_FARM_INDEX: u32 = 30_000; // TODO confirm before upgrade (29188 at time of writing)
 
 // TODO add more comments
@@ -39,8 +39,11 @@ pub trait HomesteadTrait {
 
 pub trait FarmTrait {
     fn plant(env: Env, farmer: Address, amount: i128);
+    // TODO plant_v2 separate farmer and a signer source (might be a little tricky)
 
     fn work(env: Env, farmer: Address, hash: BytesN<32>, nonce: u64) -> u32;
+    // TODO work_v2 don't require a hash, just a nonce
 
     fn harvest(env: Env, farmer: Address, index: u32) -> i128;
+    // TODO maybe instead of a plant_v2 we just make a harvest_v2 and allow folks to harvest into another account
 }
