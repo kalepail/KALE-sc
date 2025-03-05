@@ -1,4 +1,4 @@
-use crate::ContractArgs;
+use crate::{ContractArgs, BLOCKS_PER_MONTH, DECAY_RATE, SCALE, V2_GENESIS_BLOCK};
 use soroban_fixed_point_math::SorobanFixedPoint;
 use soroban_sdk::{contractimpl, panic_with_error, token, xdr::ToXdr, Address, Bytes, BytesN, Env};
 
@@ -105,6 +105,7 @@ impl FarmTrait for Contract {
         let gap = sequence - pail.sequence;
         let mut zeros = 0;
 
+        // TODO No real reason to check if the hash is valid. If it's not the zero count would just be low or nil which is fine
         if hash != generated_hash {
             panic_with_error!(&env, &Errors::HashInvalid);
         }
@@ -194,9 +195,13 @@ impl FarmTrait for Contract {
         let (normalized_gap, normalized_stake, normalized_zeros) =
             generate_normalizations(&env, &block, gap, stake, zeros);
 
+        // Calculate the decayed block reward
+        // Calculated dynamically per harvest (vs in the instance) as each block may have its own reward depending on when a user harvests
+        let block_reward = calculate_block_reward(&env, index);
+
         let reward = (normalized_gap + normalized_stake + normalized_zeros).fixed_mul_floor(
             &env,
-            &(BLOCK_REWARD + block.staked_total),
+            &(block_reward + block.staked_total),
             &block.normalized_total.max(1),
         );
         let reward_and_stake = reward + stake;
@@ -337,4 +342,18 @@ fn generate_normalizations(
         .max(min_threshold);
 
     (normalized_gap, normalized_stake, normalized_zeros)
+}
+
+fn calculate_block_reward(env: &Env, index: u32) -> i128 {
+    let elapsed_time = index.saturating_sub(V2_GENESIS_BLOCK);
+    let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
+
+    let mut result = SCALE;
+    let one_minus_rate = SCALE - DECAY_RATE;
+
+    for _ in 0..periods {
+        result = result.fixed_mul_floor(env, &one_minus_rate, &SCALE);
+    }
+
+    BLOCK_REWARD.fixed_mul_floor(env, &result, &SCALE)
 }
