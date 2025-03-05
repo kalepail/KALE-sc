@@ -1,4 +1,4 @@
-use crate::{ContractArgs, BLOCKS_PER_MONTH, DECAY_RATE, SCALE, V2_FARM_INDEX};
+use crate::{ContractArgs, BLOCKS_PER_MONTH, DECAY_RATE, SCALE, V2_GENESIS_BLOCK};
 use soroban_fixed_point_math::SorobanFixedPoint;
 use soroban_sdk::{contractimpl, panic_with_error, token, xdr::ToXdr, Address, Bytes, BytesN, Env};
 
@@ -345,7 +345,7 @@ fn generate_normalizations(
 }
 
 fn calculate_block_reward(env: &Env, index: u32) -> i128 {
-    let elapsed_time = index.saturating_sub(V2_FARM_INDEX);
+    let elapsed_time = index.saturating_sub(V2_GENESIS_BLOCK);
     let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
 
     let mut result = SCALE;

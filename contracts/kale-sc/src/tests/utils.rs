@@ -10,7 +10,7 @@ use stellar_strkey::{ed25519, Strkey};
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    types::{Block, Pail}, BLOCKS_PER_MONTH, BLOCK_REWARD, DECAY_RATE, SCALE, V2_FARM_INDEX
+    types::{Block, Pail}, BLOCKS_PER_MONTH, BLOCK_REWARD, DECAY_RATE, SCALE, V2_GENESIS_BLOCK
 };
 
 #[test]
@@ -18,12 +18,12 @@ fn calc_emissions_rate() {
     let env = Env::default();
 
     fn calculate_block_reward(env: &Env, index: u32) -> i128 {
-        let elapsed_time = index.saturating_sub(V2_FARM_INDEX);
+        let elapsed_time = index.saturating_sub(V2_GENESIS_BLOCK);
         let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
     
         let mut result = SCALE;
         let one_minus_rate = SCALE - DECAY_RATE;
-    
+
         for _ in 0..periods {
             result = result.fixed_mul_floor(env, &one_minus_rate, &SCALE);
         }
@@ -33,11 +33,12 @@ fn calc_emissions_rate() {
     
     // let target_date = 2556057600; // 2050-12-31
     // let target_date = 1767139200; // 2025-12-31
-    let index = BLOCKS_PER_MONTH * 6; // 2025-07-30
+    let index = V2_GENESIS_BLOCK + (BLOCKS_PER_MONTH * 7);
 
     let emissions_amount = calculate_block_reward(&env, index);
 
-    println!("emissions {:?}", emissions_amount);
+    println!("{:?}", BLOCK_REWARD);
+    println!("{:?}", emissions_amount);
 }
 
 #[test]

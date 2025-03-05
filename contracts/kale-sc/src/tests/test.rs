@@ -4,7 +4,7 @@ use std::{print, println};
 extern crate std;
 
 use crate::{
-    errors::Errors, tests::utils::find_nonce_and_hash, types::{Block, Storage}, Contract, ContractClient, BLOCK_INTERVAL
+    errors::Errors, tests::utils::find_nonce_and_hash, types::{Block, Storage}, Contract, ContractClient, BLOCK_INTERVAL, BLOCK_REWARD
 };
 use soroban_sdk::{
     testutils::{Address as _, BytesN as _, EnvTestConfig, Ledger},
@@ -203,7 +203,7 @@ fn test() {
 }
 
 #[test]
-#[ignore = "set BLOCKS_PER_MONTH to 10 first"]
+#[ignore = "set BLOCKS_PER_MONTH to 1 and V2_FARM_INDEX to 0"]
 fn test_decay() {
     let mut env: Env = Env::default();
 
@@ -235,8 +235,8 @@ fn test_decay() {
 
     env.cost_estimate().budget().reset_unlimited();
 
-    for i in 0..iterations {
-        env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (i + 2) as u64);
+    for i in 1..=iterations {
+        env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * i as u64);
         farm_client.plant(&farmer_1, &0);
     }
 
@@ -254,7 +254,7 @@ fn test_decay() {
         println!("FarmIndex {:?}", index);
     });
 
-    env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (iterations + 2) as u64);
+    env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (iterations + 1) as u64);
     farm_client.plant(&farmer_1, &0);
 
     env.cost_estimate().budget().reset_unlimited();
@@ -263,20 +263,21 @@ fn test_decay() {
 
     // 100 iterations
     // InvocationResources {
-    //     instructions: 323615,
-    //     mem_bytes: 117879,
-    //     read_entries: 4,
+    //     instructions: 364555,
+    //     mem_bytes: 132273,
+    //     read_entries: 5,
     //     write_entries: 2,
-    //     read_bytes: 2144,
+    //     read_bytes: 2012,
     //     write_bytes: 224,
     //     contract_events_size_bytes: 232,
-    //     persistent_rent_ledger_bytes: 0,
-    //     persistent_entry_rent_bumps: 0,
+    //     persistent_rent_ledger_bytes: 464486176,
+    //     persistent_entry_rent_bumps: 1,
     //     temporary_rent_ledger_bytes: 0,
     //     temporary_entry_rent_bumps: 0,
     // }
 
     println!("{:#?}", env.cost_estimate().resources());
 
-    println!("Reward {:?}", reward);
+    println!("{:?}", BLOCK_REWARD);
+    println!("{:?}", reward);
 }
