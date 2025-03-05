@@ -339,8 +339,7 @@ fn generate_normalizations(
         &range_zeros,
     );
 
-    // Combine the three normalized values; here we simply take the average.
-    (norm_zeros, norm_gap, norm_stake)
+    (norm_gap, norm_stake, norm_zeros)
 }
 
 fn calculate_block_reward(env: &Env, index: u32) -> i128 {
