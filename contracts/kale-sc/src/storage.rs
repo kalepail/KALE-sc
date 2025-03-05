@@ -1,7 +1,9 @@
 use soroban_sdk::{panic_with_error, Address, Env};
 
 use crate::{
-    errors::Errors, types::{Block, Pail, Storage}, WEEK_OF_LEDGERS
+    errors::Errors,
+    types::{Block, Pail, Storage},
+    WEEK_OF_LEDGERS,
 };
 
 pub fn extend_instance_ttl(env: &Env) {

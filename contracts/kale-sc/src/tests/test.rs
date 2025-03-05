@@ -4,7 +4,10 @@ use std::{print, println};
 extern crate std;
 
 use crate::{
-    errors::Errors, tests::utils::find_nonce_and_hash, types::{Block, Storage}, Contract, ContractClient, BLOCK_INTERVAL, BLOCK_REWARD
+    errors::Errors,
+    tests::utils::find_nonce_and_hash,
+    types::{Block, Storage},
+    Contract, ContractClient, BLOCK_INTERVAL, BLOCK_REWARD,
 };
 use soroban_sdk::{
     testutils::{Address as _, BytesN as _, EnvTestConfig, Ledger},
@@ -230,13 +233,14 @@ fn test_decay() {
     asset_homesteader.set_admin(&farm_address);
 
     let farmer_1: Address = Address::generate(&env);
-        
+
     let iterations = 100;
 
     env.cost_estimate().budget().reset_unlimited();
 
     for i in 1..=iterations {
-        env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * i as u64);
+        env.ledger()
+            .set_timestamp((timestamp + BLOCK_INTERVAL) * i as u64);
         farm_client.plant(&farmer_1, &0);
     }
 
@@ -254,7 +258,8 @@ fn test_decay() {
         println!("FarmIndex {:?}", index);
     });
 
-    env.ledger().set_timestamp((timestamp + BLOCK_INTERVAL) * (iterations + 1) as u64);
+    env.ledger()
+        .set_timestamp((timestamp + BLOCK_INTERVAL) * (iterations + 1) as u64);
     farm_client.plant(&farmer_1, &0);
 
     env.cost_estimate().budget().reset_unlimited();
