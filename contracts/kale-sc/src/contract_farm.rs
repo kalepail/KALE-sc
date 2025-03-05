@@ -1,4 +1,6 @@
-use crate::{ContractArgs, BLOCKS_PER_MONTH, DECAY_RATE, SCALE, V2_GENESIS_BLOCK};
+use crate::{
+    ContractArgs, BLOCKS_PER_MONTH, BLOCK_SCALE, DECAY_RATE, NORMALIZATION_SCALE, V2_GENESIS_BLOCK,
+};
 use soroban_fixed_point_math::SorobanFixedPoint;
 use soroban_sdk::{contractimpl, panic_with_error, token, xdr::ToXdr, Address, Bytes, BytesN, Env};
 
@@ -304,6 +306,7 @@ fn generate_normalizations(
     stake: i128,
     zeros: u32,
 ) -> (i128, i128, i128) {
+    // Prevent division by zero by ensuring max >= min for each range.
     // TODO should be impossible to hit (consider dropping)
     if block.max_gap < block.min_gap
         || block.max_stake < block.min_stake
@@ -317,43 +320,39 @@ fn generate_normalizations(
     let range_stake = (block.max_stake - block.min_stake).max(1);
     let range_zeros = (block.max_zeros - block.min_zeros).max(1) as i128;
 
-    // Find largest range for scaling
-    let max_range = range_gap.max(range_stake).max(range_zeros);
+    // Clamp each value within its range.
+    let clamped_gap = gap.max(block.min_gap).min(block.max_gap).max(1);
+    let clamped_stake = stake.max(block.min_stake).min(block.max_stake).max(1);
+    let clamped_zeros = zeros.max(block.min_zeros).min(block.max_zeros).max(1);
 
-    // Set minimum threshold (1% of max_range)
-    // This is intended to prevent normalization from being too small
-    // Won't disable zero reward claim but will decrease their likelihood
-    let min_threshold = (max_range / 100).max(1);
+    // Normalize each value by subtracting the minimum and scaling relative to the range size.
+    let norm_gap = ((clamped_gap - block.min_gap) as i128).fixed_mul_floor(
+        &env,
+        &NORMALIZATION_SCALE,
+        &range_gap,
+    );
+    let norm_stake =
+        (clamped_stake - block.min_stake).fixed_mul_floor(&env, &NORMALIZATION_SCALE, &range_stake);
+    let norm_zeros = ((clamped_zeros - block.min_zeros) as i128).fixed_mul_floor(
+        &env,
+        &NORMALIZATION_SCALE,
+        &range_zeros,
+    );
 
-    // Clamp inputs to valid ranges
-    let gap = gap.max(block.min_gap).min(block.max_gap);
-    let stake = stake.max(block.min_stake).min(block.max_stake);
-    let zeros = zeros.max(block.min_zeros).min(block.max_zeros);
-
-    // Scale each value relative to max_range
-    let normalized_gap = ((gap - block.min_gap) as i128)
-        .fixed_mul_floor(&env, &max_range, &range_gap)
-        .max(min_threshold);
-    let normalized_stake = ((stake - block.min_stake) as i128)
-        .fixed_mul_floor(&env, &max_range, &range_stake)
-        .max(min_threshold);
-    let normalized_zeros = ((zeros - block.min_zeros) as i128)
-        .fixed_mul_floor(&env, &max_range, &range_zeros)
-        .max(min_threshold);
-
-    (normalized_gap, normalized_stake, normalized_zeros)
+    // Combine the three normalized values; here we simply take the average.
+    (norm_zeros, norm_gap, norm_stake)
 }
 
 fn calculate_block_reward(env: &Env, index: u32) -> i128 {
     let elapsed_time = index.saturating_sub(V2_GENESIS_BLOCK);
     let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
 
-    let mut result = SCALE;
-    let one_minus_rate = SCALE - DECAY_RATE;
+    let mut result = BLOCK_SCALE;
+    let one_minus_rate = BLOCK_SCALE.saturating_sub(DECAY_RATE);
 
     for _ in 0..periods {
-        result = result.fixed_mul_floor(env, &one_minus_rate, &SCALE);
+        result = result.fixed_mul_floor(env, &one_minus_rate, &BLOCK_SCALE);
     }
 
-    BLOCK_REWARD.fixed_mul_floor(env, &result, &SCALE)
+    BLOCK_REWARD.fixed_mul_floor(env, &result, &BLOCK_SCALE)
 }

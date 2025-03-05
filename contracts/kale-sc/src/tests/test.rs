@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use std::{print, println};
 extern crate std;
 
@@ -200,8 +198,8 @@ fn test() {
             .get::<Storage, Block>(&Storage::Block(index))
             .unwrap();
 
-        println!("{:?}", index);
-        println!("{:?}", block);
+        println!("INDEX {:?}", index);
+        println!("BLOCK {:?}", block);
     });
 }
 

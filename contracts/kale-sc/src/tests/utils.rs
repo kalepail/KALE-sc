@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use std::println;
 extern crate std;
 
@@ -11,7 +9,7 @@ use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     types::{Block, Pail},
-    BLOCKS_PER_MONTH, BLOCK_REWARD, DECAY_RATE, SCALE, V2_GENESIS_BLOCK,
+    BLOCKS_PER_MONTH, BLOCK_REWARD, BLOCK_SCALE, DECAY_RATE, V2_GENESIS_BLOCK,
 };
 
 #[test]
@@ -22,14 +20,14 @@ fn calc_emissions_rate() {
         let elapsed_time = index.saturating_sub(V2_GENESIS_BLOCK);
         let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
 
-        let mut result = SCALE;
-        let one_minus_rate = SCALE - DECAY_RATE;
+        let mut result = BLOCK_SCALE;
+        let one_minus_rate = BLOCK_SCALE.saturating_sub(DECAY_RATE);
 
         for _ in 0..periods {
-            result = result.fixed_mul_floor(env, &one_minus_rate, &SCALE);
+            result = result.fixed_mul_floor(env, &one_minus_rate, &BLOCK_SCALE);
         }
 
-        BLOCK_REWARD.fixed_mul_floor(env, &result, &SCALE)
+        BLOCK_REWARD.fixed_mul_floor(env, &result, &BLOCK_SCALE)
     }
 
     // let target_date = 2556057600; // 2050-12-31
@@ -185,11 +183,11 @@ fn test_count_bytes() {
 fn test_fixed_mul_floor() {
     let env = Env::default();
 
-    let x: i128 = 10;
-    let y: i128 = 1_0000000;
-    let denominator: i128 = 100;
+    let y: i128 = 500;
+    let x: i128 = 100 * 10000000;
+    let denominator: i128 = 1;
 
-    let res = x.fixed_mul_floor(&env, &y, &denominator);
+    let res = x.saturating_sub(x.fixed_div_floor(&env, &y, &denominator));
 
     println!("{:?}", res);
 }
