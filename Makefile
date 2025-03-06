@@ -1,15 +1,14 @@
-clean:
+clean: fmt
 	rm -rf target/wasm32-unknown-unknown/release
-	cargo fmt --all
 
 build:
 	make clean
 	stellar contract build
 	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/kale_sc.wasm
 
-install:
+upload:
 	make build
-	stellar contract install --wasm target/wasm32-unknown-unknown/release/kale_sc.optimized.wasm --network testnet --source default
+	stellar contract upload --wasm target/wasm32-unknown-unknown/release/kale_sc.optimized.wasm --network testnet --source default
 
 deploy:
 	make build
