@@ -1,5 +1,5 @@
 use crate::{
-    ContractArgs, BLOCKS_PER_MONTH, BLOCK_SCALE, DECAY_RATE, NORMALIZATION_SCALE, V2_GENESIS_BLOCK,
+    ContractArgs, BLOCKS_PER_MONTH, BLOCK_SCALE, INVERSE_DECAY_RATE, V2_GENESIS_BLOCK
 };
 use soroban_fixed_point_math::SorobanFixedPoint;
 use soroban_sdk::{contractimpl, panic_with_error, token, xdr::ToXdr, Address, Bytes, BytesN, Env};
@@ -121,6 +121,9 @@ impl FarmTrait for Contract {
             }
         }
 
+        // TODO save per farmer normalizations to their Pail so we don't have to recalculate during harvest
+        // Would allow us to upgrade the normalizations logic without needing to toss the active block
+
         let (normalized_gap, normalized_stake, normalized_zeros) =
             generate_normalizations(&env, &block, gap, pail.stake, zeros);
 
@@ -139,6 +142,7 @@ impl FarmTrait for Contract {
                     prev_normalized_gap + prev_normalized_stake + prev_normalized_zeros;
             }
             None => {
+                // Reclaim the stake from the work step
                 block.staked_total -= pail.stake;
             }
         }
@@ -320,26 +324,29 @@ fn generate_normalizations(
     let range_stake = (block.max_stake - block.min_stake).max(1);
     let range_zeros = (block.max_zeros - block.min_zeros).max(1) as i128;
 
+    // Find largest range for scaling
+    let normalization_scale = range_gap.max(range_stake).max(range_zeros);
+
     // Clamp each value within its range.
-    let clamped_gap = gap.max(block.min_gap).min(block.max_gap).max(1);
-    let clamped_stake = stake.max(block.min_stake).min(block.max_stake).max(1);
-    let clamped_zeros = zeros.max(block.min_zeros).min(block.max_zeros).max(1);
+    let clamped_gap = gap.max(block.min_gap).min(block.max_gap);
+    let clamped_stake = stake.max(block.min_stake).min(block.max_stake);
+    let clamped_zeros = zeros.max(block.min_zeros).min(block.max_zeros);
 
     // Normalize each value by subtracting the minimum and scaling relative to the range size.
-    let norm_gap = ((clamped_gap - block.min_gap) as i128).fixed_mul_floor(
+    let normalized_gap = ((clamped_gap - block.min_gap) as i128).fixed_mul_floor(
         &env,
-        &NORMALIZATION_SCALE,
+        &normalization_scale,
         &range_gap,
-    );
-    let norm_stake =
-        (clamped_stake - block.min_stake).fixed_mul_floor(&env, &NORMALIZATION_SCALE, &range_stake);
-    let norm_zeros = ((clamped_zeros - block.min_zeros) as i128).fixed_mul_floor(
+    ).max(1);
+    let normalized_stake =
+        (clamped_stake - block.min_stake).fixed_mul_floor(&env, &normalization_scale, &range_stake).max(1);
+    let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128).fixed_mul_floor(
         &env,
-        &NORMALIZATION_SCALE,
+        &normalization_scale,
         &range_zeros,
-    );
+    ).max(1);
 
-    (norm_gap, norm_stake, norm_zeros)
+    (normalized_gap, normalized_stake, normalized_zeros)
 }
 
 fn calculate_block_reward(env: &Env, index: u32) -> i128 {
@@ -347,10 +354,9 @@ fn calculate_block_reward(env: &Env, index: u32) -> i128 {
     let periods = elapsed_time.saturating_div(BLOCKS_PER_MONTH);
 
     let mut result = BLOCK_SCALE;
-    let one_minus_rate = BLOCK_SCALE.saturating_sub(DECAY_RATE);
 
     for _ in 0..periods {
-        result = result.fixed_mul_floor(env, &one_minus_rate, &BLOCK_SCALE);
+        result = result.fixed_mul_floor(env, &INVERSE_DECAY_RATE, &BLOCK_SCALE);
     }
 
     BLOCK_REWARD.fixed_mul_floor(env, &result, &BLOCK_SCALE)

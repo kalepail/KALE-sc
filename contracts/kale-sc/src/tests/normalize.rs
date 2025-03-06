@@ -23,7 +23,7 @@ fn main() {
 
     let mut normalized_total = 0;
 
-    for i in 0..500 {
+    for _i in 0..500 {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -38,7 +38,7 @@ fn main() {
     }
 
     let zeros = 5;
-    let gap = 40;
+    let gap = 10;
     let stake = 0;
     let result = normalize(
         zeros, zeros_min, zeros_max, gap, gap_min, gap_max, stake, stake_min, stake_max,

@@ -198,8 +198,7 @@ fn test() {
             .get::<Storage, Block>(&Storage::Block(index))
             .unwrap();
 
-        println!("INDEX {:?}", index);
-        println!("BLOCK {:?}", block);
+        println!("{} {:?}", index, block);
     });
 }
 
