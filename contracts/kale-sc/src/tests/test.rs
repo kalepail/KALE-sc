@@ -203,7 +203,7 @@ fn test() {
 }
 
 #[test]
-#[ignore = "set BLOCKS_PER_MONTH to 1 and V2_FARM_INDEX to 0"]
+#[ignore = "set BLOCKS_PER_MONTH to 1, V2_FARM_INDEX to 0 and disable hash checking"]
 fn test_decay() {
     let mut env: Env = Env::default();
 
