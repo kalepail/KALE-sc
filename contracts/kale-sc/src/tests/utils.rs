@@ -8,7 +8,8 @@ use stellar_strkey::{ed25519, Strkey};
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    types::{Block, Pail}, BLOCKS_PER_MONTH, BLOCK_REWARD, BLOCK_SCALE, INVERSE_DECAY_RATE, V2_GENESIS_BLOCK
+    types::{Block, Pail},
+    BLOCKS_PER_MONTH, BLOCK_REWARD, BLOCK_SCALE, INVERSE_DECAY_RATE, V2_GENESIS_BLOCK,
 };
 
 #[test]
@@ -446,18 +447,15 @@ fn generate_normalizations_v2(
     let clamped_zeros = zeros.max(block.min_zeros).min(block.max_zeros);
 
     // Normalize each value by subtracting the minimum and scaling relative to the range size.
-    let normalized_gap = ((clamped_gap - block.min_gap) as i128).fixed_mul_floor(
-        &env,
-        &max_range,
-        &range_gap,
-    ).max(1);
-    let normalized_stake =
-        (clamped_stake - block.min_stake).fixed_mul_floor(&env, &max_range, &range_stake).max(1);
-    let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128).fixed_mul_floor(
-        &env,
-        &max_range,
-        &range_zeros,
-    ).max(1);
+    let normalized_gap = ((clamped_gap - block.min_gap) as i128)
+        .fixed_mul_floor(&env, &max_range, &range_gap)
+        .max(1);
+    let normalized_stake = (clamped_stake - block.min_stake)
+        .fixed_mul_floor(&env, &max_range, &range_stake)
+        .max(1);
+    let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128)
+        .fixed_mul_floor(&env, &max_range, &range_zeros)
+        .max(1);
 
     println!(
         "{:?} {:?} {:?}",

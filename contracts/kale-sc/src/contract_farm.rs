@@ -1,6 +1,4 @@
-use crate::{
-    ContractArgs, BLOCKS_PER_MONTH, BLOCK_SCALE, INVERSE_DECAY_RATE, V2_GENESIS_BLOCK
-};
+use crate::{ContractArgs, BLOCKS_PER_MONTH, BLOCK_SCALE, INVERSE_DECAY_RATE, V2_GENESIS_BLOCK};
 use soroban_fixed_point_math::SorobanFixedPoint;
 use soroban_sdk::{contractimpl, panic_with_error, token, xdr::ToXdr, Address, Bytes, BytesN, Env};
 
@@ -333,18 +331,15 @@ fn generate_normalizations(
     let clamped_zeros = zeros.max(block.min_zeros).min(block.max_zeros);
 
     // Normalize each value by subtracting the minimum and scaling relative to the range size.
-    let normalized_gap = ((clamped_gap - block.min_gap) as i128).fixed_mul_floor(
-        &env,
-        &normalization_scale,
-        &range_gap,
-    ).max(1);
-    let normalized_stake =
-        (clamped_stake - block.min_stake).fixed_mul_floor(&env, &normalization_scale, &range_stake).max(1);
-    let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128).fixed_mul_floor(
-        &env,
-        &normalization_scale,
-        &range_zeros,
-    ).max(1);
+    let normalized_gap = ((clamped_gap - block.min_gap) as i128)
+        .fixed_mul_floor(&env, &normalization_scale, &range_gap)
+        .max(1);
+    let normalized_stake = (clamped_stake - block.min_stake)
+        .fixed_mul_floor(&env, &normalization_scale, &range_stake)
+        .max(1);
+    let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128)
+        .fixed_mul_floor(&env, &normalization_scale, &range_zeros)
+        .max(1);
 
     (normalized_gap, normalized_stake, normalized_zeros)
 }
