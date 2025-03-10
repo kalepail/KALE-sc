@@ -32,9 +32,7 @@ impl HomesteadTrait for Contract {
     }
 
     fn upgrade(env: Env, hash: BytesN<32>) {
-        let homesteader = get_farm_homesteader(&env);
-
-        homesteader.require_auth();
+        get_farm_homesteader(&env).require_auth();
 
         env.deployer().update_current_contract_wasm(hash);
 
@@ -42,12 +40,9 @@ impl HomesteadTrait for Contract {
     }
 
     fn pause(env: Env) {
-        let homesteader = get_farm_homesteader(&env);
-        let paused = get_farm_paused(&env);
+        get_farm_homesteader(&env).require_auth();
 
-        homesteader.require_auth();
-
-        if paused {
+        if get_farm_paused(&env) {
             panic_with_error!(&env, &Errors::FarmPaused);
         }
 
@@ -57,12 +52,9 @@ impl HomesteadTrait for Contract {
     }
 
     fn unpause(env: Env) {
-        let homesteader = get_farm_homesteader(&env);
-        let paused = get_farm_paused(&env);
+        get_farm_homesteader(&env).require_auth();
 
-        homesteader.require_auth();
-
-        if paused {
+        if get_farm_paused(&env) {
             panic_with_error!(&env, &Errors::FarmNotPaused);
         }
 
@@ -72,9 +64,7 @@ impl HomesteadTrait for Contract {
     }
 
     fn remove_block(env: Env, index: u32) {
-        let homesteader = get_farm_homesteader(&env);
-
-        homesteader.require_auth();
+        get_farm_homesteader(&env).require_auth();
 
         env.storage().temporary().remove(&Storage::Block(index));
     }
@@ -92,9 +82,7 @@ impl CustomAccountInterface for Contract {
         _signatures: Option<Vec<Val>>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), Errors> {
-        let homesteader = get_farm_homesteader(&env);
-
-        homesteader.require_auth_for_args(vec![&env]);
+        get_farm_homesteader(&env).require_auth_for_args(vec![&env]);
 
         Ok(())
     }

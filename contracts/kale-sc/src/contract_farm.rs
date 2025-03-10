@@ -18,10 +18,17 @@ impl FarmTrait for Contract {
     fn plant(env: Env, farmer: Address, amount: i128) {
         farmer.require_auth();
 
+        if amount < 0 {
+            panic_with_error!(&env, &Errors::PlantAmountTooLow);
+        }
+
+        if get_farm_paused(&env) {
+            panic_with_error!(&env, &Errors::FarmPaused);
+        }
+
         let asset = get_farm_asset(&env);
         let mut index = get_farm_index(&env);
         let mut farm_block = get_farm_block(&env).unwrap_or(new_farm_block(&env));
-        let paused = get_farm_paused(&env);
         let mut block = match get_block(&env, index) {
             // genesis or evicted
             None => {
@@ -37,6 +44,15 @@ impl FarmTrait for Contract {
                 if env.ledger().timestamp() >= block.timestamp + BLOCK_INTERVAL {
                     let block = new_block(&env, &farm_block);
 
+                    // NOTE due to race conditions with simulation we need to ensure if we simulate this branch but execute the above branch
+                    // we've got the footprint we need
+
+                    // simulations says we're going to create a new block
+                    // execution will say we have the new block and we need to read it
+                    // so prepare for the future
+                    get_block(&env, index + 1);
+                    has_pail(&env, farmer.clone(), index + 1);
+
                     // ensure we put this after the `new_block` above
                     farm_block = new_farm_block(&env);
                     bump_farm_index(&env, &mut index);
@@ -47,14 +63,6 @@ impl FarmTrait for Contract {
                 }
             }
         };
-
-        if paused {
-            panic_with_error!(&env, &Errors::FarmPaused);
-        }
-
-        if amount < 0 {
-            panic_with_error!(&env, &Errors::PlantAmountTooLow);
-        }
 
         // must come after block discovery as the index may have been bumped
         if has_pail(&env, farmer.clone(), index) {
