@@ -50,7 +50,7 @@ impl FarmTrait for Contract {
 
                     new_block(&env, &farm_block)
                 }
-                Some(block) => block
+                Some(block) => block,
             }
         };
 
