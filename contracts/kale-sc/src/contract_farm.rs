@@ -28,11 +28,22 @@ impl FarmTrait for Contract {
 
         let asset = get_farm_asset(&env);
         let mut index = get_farm_index(&env);
-        let mut farm_block = get_farm_block(&env).unwrap_or(new_farm_block(&env));
+        let mut farm_block = get_farm_block(&env).unwrap_or_else(|| panic_with_error!(&env, &Errors::FarmBlockMissing));
+
+        // NOTE originally we were calling `new_block` as the branch logic which read Block+0 
+        // but then in race txns 99+ we needed to read Block+1 but didn't have the read_bytes for that
+        // If we include Block+0 as the branch logic it's LedgerKey would be included in the RW footprint which will consume read_bytes
+        // Then in the 99+ when we try to read an additional Block+1 it will fail because we don't have the read_bytes for it
+        // TODO Originally I noticed a variance of 460 and 240 read_bytes in the 99+ which I don't understand. 460 makes sense but 240 doesn't
 
         // if the block is >= BLOCK_INTERVAL old, we need to create a new one
         let mut block = if env.ledger().timestamp() >= farm_block.timestamp + BLOCK_INTERVAL {
             let block = new_block(&env, &farm_block);
+
+            // call `get_block` on the previous block so we've got the necessary read_bytes for the N+ transactions which would otherwise be a `Block` short
+            // e.g. 100 tx simulate this branch but only 1 actually executes it and the rest go to the else branch
+            // this will give us a bonus budget of 460 read_bytes which the 99+ transactions can use to read the block this simulation didn't need to read
+            get_block(&env, index);
 
             // ensure we put this after the `new_block` above
             farm_block = new_farm_block(&env);
@@ -92,7 +103,7 @@ impl FarmTrait for Contract {
 
         let index = get_farm_index(&env);
         let mut farm_block = get_farm_block(&env)
-            .unwrap_or_else(|| panic_with_error!(&env, &Errors::HomesteadMissing));
+            .unwrap_or_else(|| panic_with_error!(&env, &Errors::FarmBlockMissing));
         let mut block = get_block(&env, index)
             .unwrap_or_else(|| panic_with_error!(&env, &Errors::BlockMissing));
         let mut pail = get_pail(&env, farmer.clone(), index)
@@ -220,7 +231,7 @@ impl FarmTrait for Contract {
     }
 }
 
-fn new_farm_block(env: &Env) -> Block {
+pub fn new_farm_block(env: &Env) -> Block {
     Block {
         timestamp: env.ledger().timestamp(),
         min_gap: u32::MAX,

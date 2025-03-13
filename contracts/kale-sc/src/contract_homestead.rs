@@ -1,4 +1,4 @@
-use crate::ContractArgs;
+use crate::{contract_farm::new_farm_block, storage::set_farm_block, ContractArgs};
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contractimpl,
@@ -27,6 +27,7 @@ impl HomesteadTrait for Contract {
 
         set_farm_homesteader(&env, &farmer);
         set_farm_asset(&env, &asset);
+        set_farm_block(&env, &new_farm_block(&env));
 
         extend_instance_ttl(&env);
     }

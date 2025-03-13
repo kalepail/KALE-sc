@@ -10,7 +10,7 @@ stellar contract invoke --id CDQKZ76ZS7LYDOZ2E7OG5LUJEWDDUNYBVYRJTBJK6645DZBNJWA
 # (add trustline to user)
 
 # Upgrade
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- upgrade --hash 5939f818e9d57ee392ea66aef9197333459d5d535b26eb595d5729be5d7a2a5e
+stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- upgrade --hash c2c2e875a5d50d2292bbf694393285eb6de0796d222798baa7628314b8000961
 
 # Plant
 stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- plant --amount 0 --farmer default
