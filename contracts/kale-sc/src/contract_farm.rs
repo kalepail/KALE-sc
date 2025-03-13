@@ -35,6 +35,8 @@ impl FarmTrait for Contract {
         // If we include Block+0 as the branch logic it's LedgerKey would be included in the RW footprint which will consume read_bytes
         // Then in the 99+ when we try to read an additional Block+1 it will fail because we don't have the read_bytes for it
         // TODO Originally I noticed a variance of 460 and 240 read_bytes in the 99+ which I don't understand. 460 makes sense but 240 doesn't
+        // 240 is the length of the Pail LedgerEntry so actually what was happening wasn't the Block it was the Pail read somehow?
+        // I _think_ the only way 240 would make any sense as a deficit would be in the case of duplicate `plant` calls for the same farmer
 
         // if the block is >= BLOCK_INTERVAL old, we need to create a new one
         let mut block = if env.ledger().timestamp() >= farm_block.timestamp + BLOCK_INTERVAL {
