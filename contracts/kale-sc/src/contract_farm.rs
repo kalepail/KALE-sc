@@ -28,9 +28,10 @@ impl FarmTrait for Contract {
 
         let asset = get_farm_asset(&env);
         let mut index = get_farm_index(&env);
-        let mut farm_block = get_farm_block(&env).unwrap_or_else(|| panic_with_error!(&env, &Errors::FarmBlockMissing));
+        let mut farm_block = get_farm_block(&env)
+            .unwrap_or_else(|| panic_with_error!(&env, &Errors::FarmBlockMissing));
 
-        // NOTE originally we were calling `new_block` as the branch logic which read Block+0 
+        // NOTE originally we were calling `new_block` as the branch logic which read Block+0
         // but then in race txns 99+ we needed to read Block+1 but didn't have the read_bytes for that
         // If we include Block+0 as the branch logic it's LedgerKey would be included in the RW footprint which will consume read_bytes
         // Then in the 99+ when we try to read an additional Block+1 it will fail because we don't have the read_bytes for it
