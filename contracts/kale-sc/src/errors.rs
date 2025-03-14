@@ -17,4 +17,5 @@ pub enum Errors {
     BlockInvalid = 12,
     HashInvalid = 13,
     HarvestNotReady = 14,
+    GapCountTooLow = 15,
 }

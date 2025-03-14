@@ -116,6 +116,11 @@ impl FarmTrait for Contract {
         let gap = sequence - pail.sequence;
         let mut zeros = 0;
 
+        // Ensure there's at least 1 ledger gap between plant and work (sorry RowBear, you're a genius)
+        if gap == 0 {
+            panic_with_error!(env, &Errors::GapCountTooLow);
+        }
+
         // TODO No real reason to check if the hash is valid. If it's not the zero count would just be low or nil which is fine
         if hash != generated_hash {
             panic_with_error!(&env, &Errors::HashInvalid);

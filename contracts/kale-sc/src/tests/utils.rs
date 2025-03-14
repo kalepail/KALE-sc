@@ -40,6 +40,47 @@ fn calc_emissions_rate() {
 }
 
 #[test]
+fn test_generate_reward() {
+    let env = Env::default();
+
+    let block = Block {
+        entropy: BytesN::from_array(&env, &[0; 32]),
+        max_gap: 50,
+        max_stake: 1234747261419,
+        max_zeros: 10,
+        min_gap: 0,
+        min_stake: 0,
+        min_zeros: 5,
+        normalized_total: 230227940395912,
+        staked_total: 15000000,
+        timestamp: 0,
+    };
+
+    let pail = Pail {
+        sequence: 0,
+        gap: Some(40),
+        stake: 10000,
+        zeros: Some(7),
+    };
+
+    let (normalized_gap, normalized_stake, normalized_zeros) = generate_normalizations_v2(
+        &env,
+        &block,
+        pail.gap.unwrap(),
+        pail.stake,
+        pail.zeros.unwrap(),
+    );
+
+    let reward = (normalized_gap + normalized_stake + normalized_zeros).fixed_mul_floor(
+        &env,
+        &(BLOCK_REWARD + block.staked_total),
+        &block.normalized_total.max(1),
+    );
+
+    println!("v2 {:?}", reward);
+}
+
+#[test]
 fn test_zero_harvest() {
     let env = Env::default();
 
@@ -439,7 +480,7 @@ fn generate_normalizations_v2(
     let range_zeros = (block.max_zeros - block.min_zeros).max(1) as i128;
 
     // Find largest range for scaling
-    let max_range = range_gap.max(range_stake).max(range_zeros);
+    let normalization_scale = range_gap.max(range_stake).max(range_zeros);
 
     // Clamp each value within its range.
     let clamped_gap = gap.max(block.min_gap).min(block.max_gap);
@@ -448,19 +489,14 @@ fn generate_normalizations_v2(
 
     // Normalize each value by subtracting the minimum and scaling relative to the range size.
     let normalized_gap = ((clamped_gap - block.min_gap) as i128)
-        .fixed_mul_floor(&env, &max_range, &range_gap)
+        .fixed_mul_floor(&env, &normalization_scale, &range_gap)
         .max(1);
     let normalized_stake = (clamped_stake - block.min_stake)
-        .fixed_mul_floor(&env, &max_range, &range_stake)
+        .fixed_mul_floor(&env, &normalization_scale, &range_stake)
         .max(1);
     let normalized_zeros = ((clamped_zeros - block.min_zeros) as i128)
-        .fixed_mul_floor(&env, &max_range, &range_zeros)
+        .fixed_mul_floor(&env, &normalization_scale, &range_zeros)
         .max(1);
-
-    println!(
-        "{:?} {:?} {:?}",
-        normalized_gap, normalized_stake, normalized_zeros
-    );
 
     (normalized_gap, normalized_stake, normalized_zeros)
 }
