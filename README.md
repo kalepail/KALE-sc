@@ -49,7 +49,7 @@ In the end these values are all normalized across a common base value and then j
 
 The aim of this mathematical algorithm is to try and strike a balance between timing, risk, staking power and hashing power where no one value is too overly preferred against the other. As time progresses I expect we'll need to continue to refine the algorithm in order to find the appropriate balance of power between OG farmers, power users and new players.
 
-To dig more deeply into the math here explore the [`generate_normalizations()`](https://github.com/kalepail/KALE-sc/blob/main/contracts/kale-sc/src/contract_farm.rs#L268-L294) function.
+To dig more deeply into the math here explore the [`generate_normalizations()`](https://github.com/kalepail/KALE-sc/blob/main/contracts/kale-sc/src/contract_farm.rs#L322-L363) function.
 
 ### 2. `work`
 
