@@ -116,7 +116,7 @@ Keep in mind block's are stored as temporary entries so you either need to act f
 Want to submit mainnet transactions for free? Use [Launchtube](https://github.com/stellar/launchtube)! I'll be handing out 100 XLM API tokens to anyone who asks in our [Discord channel](https://discord.com/channels/761985725453303838/1304843790351204403).
 
 ## Available Prebuilt Miners
-* [Web miner](https://farm.kalepail.com) — [Tyler van der Hoeven](https://github.com/kalepail)
+* [Web miner](https://kalefarm.xyz/) — [Tyler van der Hoeven](https://github.com/kalepail)
 * [C++ miner](https://github.com/FredericRezeau/kale-miner) — [Frederic 경진 Rezeau](https://github.com/FredericRezeau)
 * [Rust miner](https://github.com/kalepail/kale-farmer) — [Tyler van der Hoeven](https://github.com/kalepail)
 
