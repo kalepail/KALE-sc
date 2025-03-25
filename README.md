@@ -9,7 +9,7 @@
 > This contract has not been audited nor has it been thoroughly tested, it is – as the kids say – a meme coin. 
 > Take this into consideration.
 
-`KALE` is a Stellar asset that can only be created by mining it through this contract. Only one unit (`1_0000000`) of the asset can be farmed every minute.
+`KALE` is a Stellar asset that can only be created by farming it through this contract. Only five hundred units (`500_0000000`) of the asset can be farmed every minute.
 
 Network | `MAINNET` | `TESTNET`
 :--- | :--- | :--- 
@@ -18,13 +18,15 @@ Asset | `KALE:GBDVX4VELCDSQ54KQJYTNHXAHFLBCA77ZY2USQBM4CSHTTV7DME7KALE` | `KALE:
 SAC | `CB23WRDQWGSP6YPMY4UV5C4OW5CBTXKYN3XEATG7KJEZCXMJBYEHOUOV` | `CDQKZ76ZS7LYDOZ2E7OG5LUJEWDDUNYBVYRJTBJK6645DZBNJWA7DXCR` 
 
 ## Some Unique Characteristics 
-* This is not a winner takes all mining contract. The block reward is distributed to all working farmers based off contributions both to a staking step and a working step.
+
+* This is not a winner takes all farming contract. The block reward is distributed to all working farmers based off contributions both to a staking step and a working step.
 * The block reward amount will vary up from a `BLOCK_REWARD` base to include any unclaimed `KALE` staked by farmers who were unable to to call `work` for the block.
-* The block reward is calculated by the minute but blocks close every `BLOCK_INTERVAL` seconds. This likely will be greater than a minute to ensure an appropriate balance between blockchain load and hash difficulty distribution. Close too quickly and the blockchain could be overwhelmed with requests. Close too slowly and the hash difficulty could be too high for the average CPU miner to participate.
+* The block reward is calculated by the minute but blocks close every `BLOCK_INTERVAL` seconds. This likely will be greater than a minute to ensure an appropriate balance between blockchain load and hash difficulty distribution. Close too quickly and the blockchain could be overwhelmed with requests. Close too slowly and the hash difficulty could be too high for the average CPU farmer to participate.
 * Block rewards must be claimed passively after the next block has its first `plant` invocation.
 * All storage other than a few protocol items is temporary. This keeps things cheap af but also introduces an interesting "risk" mechanic in that if you're tardy to claim your rewards you might just miss out entirely. Don't let those veggies rot!
+* There's a fixed 5% emission decay rate compounding every `BLOCKS_PER_MONTH` (roughly every 30 days). This effectively caps the total supply at an asymptote of 500M KALE. 
 
-## The Mining Process
+## The Farming Process
 
 In order to successfully farm `KALE` into your account you must invoke 3 contract functions:
 1. Start with the `plant` staking function.
@@ -35,7 +37,7 @@ Let's look at each of these steps in more detail.
 
 ### 1. `plant`
 
-Step one of all bountiful harvests is planting. In our case planting is the staking step. In order to both commit your interest in mining a block and to multiply your bounty you must stake some amount of `KALE`. Please note that a stake of `0` is permitted and is in fact the only way to get started farming in The KALEpail Project.
+Step one of all bountiful harvests is planting. In our case planting is the staking step. In order to both commit your interest in farming a block and to multiply your bounty you must stake some amount of `KALE`. Please note that a stake of `0` is permitted and is in fact the only way to get started farming in The KALEpail Project.
 
 The amount you stake will be included in the block reward calculation alongside the prefix zeros you submit in your `hash` during the `work` step and the number of ledgers you let pass between when you called `plant` and `work`. 
 
@@ -53,7 +55,7 @@ To dig more deeply into the math here explore the [`generate_normalizations()`](
 
 ### 2. `work`
 
-Once you've successfully ~~staked your claim~~ planted your garden you can move on to the actual mining step. The goal here is to attempt to generate a valid hash with the maximum number of prefix zeros. The more zeros you can generate the more `KALE` you'll be able to harvest in the end.
+Once you've successfully ~~staked your claim~~ planted your garden you can move on to the actual farming step. The goal here is to attempt to generate a valid hash with the maximum number of prefix zeros. The more zeros you can generate the more `KALE` you'll be able to harvest in the end.
 
 Hashes will be verified via the following function:
 
@@ -102,28 +104,31 @@ The total available reward will be the base `BLOCK_REWARD` + any stake that wasn
 
 You are always guaranteed to receive back _at least_ as much as you staked assuming you were able to submit a valid hash for the block in the `work` step.
 
-Keep in mind block's are stored as temporary entries so you either need to act fast to claim your rewards or bump the entry's ttl to keep it from being evicted. Once it's gone, it, your rewards, and your stake are all gone with it.
+Keep in mind blocks are stored as temporary entries so you either need to act fast (within 24 hrs) to claim your rewards or else bump the entry's ttl to keep it from being evicted. Once it's gone, it, your rewards, and your stake are all gone with it.
 
 ---
 
 ## Protips
-* Of `plant`, `work` and `harvest` only `plant` calls `require_auth` on the `farmer` argument. This would allow other accounts to call `work` and `harvest` on behalf of the farmer. This could be useful in joint mining pools where a service could create a separate contract or service which could collect on a portion of `KALE` or some other asset in exchange for performing the `work` and `harvest` functions for other farmers.
+
+* Of `plant`, `work` and `harvest` only `plant` calls `require_auth` on the `farmer` argument. This allows other accounts to call `work` and `harvest` on behalf of the farmer. This could be useful in joint farming pools where a service could create a separate contract or service which could collect on a portion of `KALE` or some other asset in exchange for performing the `work` and/or `harvest` functions for other farmers.
 * Write a harvest contract that can harvest multiple blocks at a time. Temporary ttl lasts 24 hrs atm so there’s quite a bit of headroom to bundle blocks into single super claim transactions.
     * Build a service that harvests other folks blocks for them (for a fee)
     * Build a service that bumps ttl on blocks (for a fee) to ensure there's time to claim rewards.
 
 ## Get A Free Launchtube Token
-Want to submit mainnet transactions for free? Use [Launchtube](https://github.com/stellar/launchtube)! I'll be handing out 100 XLM API tokens to anyone who asks in our [Discord channel](https://discord.com/channels/761985725453303838/1304843790351204403).
 
-## Available Prebuilt Miners
-* [Web miner](https://kalefarm.xyz/) — [Tyler van der Hoeven](https://github.com/kalepail)
-* [C++ miner](https://github.com/FredericRezeau/kale-miner) — [Frederic 경진 Rezeau](https://github.com/FredericRezeau)
-* [Rust miner](https://github.com/kalepail/kale-farmer) — [Tyler van der Hoeven](https://github.com/kalepail)
+Want to submit mainnet transactions for free? Use [Launchtube](https://github.com/stellar/launchtube)! I'll be handing out free XLM API tokens to anyone who asks in our [🥬 Discord channel](https://discord.gg/hSn6e3qGCN).
+
+## Available Prebuilt Farmers
+
+* [Web farmer](https://kalefarm.xyz/) — [Tyler van der Hoeven](https://github.com/kalepail)
+* [C++ farmer](https://github.com/FredericRezeau/kale-miner) — [Frederic 경진 Rezeau](https://github.com/FredericRezeau)
+* [Rust farmer](https://github.com/kalepail/kale-farmer) — [Tyler van der Hoeven](https://github.com/kalepail)
 
 ## Join The Discussion
-Come chat it up in the [`KALE` forum discussion](https://discord.gg/stellar-global-761985725453303838) on the Stellar Global Discord server.
+Come chat it up in the [🥬 Discord channel](https://discord.gg/hSn6e3qGCN) on the Stellar Global Discord server.
 
 ---
 
 ## Attribution
-The KALEpail project wouldn't have been possible without the initial innovation of the [FCM project](https://github.com/Stellar-Corium/FCM-sc) or the subsequent community efforts spearheaded by [Frederic 경진 Rezeau](https://github.com/FredericRezeau/fcm-miner).
+The KALEpail project wouldn't have been possible without the initial innovation of the [FCM project](https://github.com/Stellar-Corium/FCM-sc) or the subsequent community efforts spearheaded by [Frederic 경진 Rezeau](https://github.com/FredericRezeau).
