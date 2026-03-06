@@ -46,7 +46,8 @@ impl FarmTrait for Contract {
             // call `get_block` on the previous block so we've got the necessary read_bytes for the N+ transactions which would otherwise be a `Block` short
             // e.g. 100 tx simulate this branch but only 1 actually executes it and the rest go to the else branch
             // this will give us a bonus budget of 460 read_bytes which the 99+ transactions can use to read the block this simulation didn't need to read
-            get_block(&env, index);
+            // get_block(&env, index);
+            // TODO turns out we don't need this. It just adds a footprint item we don't actually need
 
             // ensure we put this after the `new_block` above
             farm_block = new_farm_block(&env);

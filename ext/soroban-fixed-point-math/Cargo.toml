@@ -1,0 +1,15 @@
+[package]
+name = "soroban-fixed-point-math"
+version = "1.4.0"
+description = "Fixed point math support for Soroban smart contracts"
+homepage = "https://github.com/script3/soroban-fixed-point-math"
+repository = "https://github.com/script3/soroban-fixed-point-math"
+authors = ["mootz12 <mootz12@protonmail.com>"]
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+keywords = ["no_std", "wasm"]
+rust-version = "1.88"
+
+[dependencies]
+soroban-sdk = "23.0.0-rc.2.1"

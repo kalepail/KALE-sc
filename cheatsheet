@@ -2,24 +2,24 @@
 # CDL74RF5BLYR2YBLCCI7F5FB6TPSCLKEJUBSD2RSVWZ4YHF3VMFAIGWA
 
 # Deploy SAC
-stellar contract asset deploy --asset KALE:GDLN4SLKCSXKBPABPSAH2TOQVCCU6LJAMFMGA6NNMDR6HMB5DQZEFCZH --network testnet --source default
+stellar contract asset deploy --asset KALE:GCHPTWXMT3HYF4RLZHWBNRF4MPXLTJ76ISHMSYIWCCDXWUYOQG5MR2AB --network testnet --source default
 
 # Update SAC Admin
-stellar contract invoke --id CDQKZ76ZS7LYDOZ2E7OG5LUJEWDDUNYBVYRJTBJK6645DZBNJWA7DXCR --network testnet --source SD6ANRELPSGCK5KLC5N5ZRW7KNBX7LVFWZ5CN6KW2MALV5V2KMEC7WBG -- set_admin --new_admin CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A
+stellar contract invoke --id CAAVU2UQJLMZ3GUZFM56KVNHLPA3ZSSNR4VP2U53YBXFD2GI3QLIVHZZ --network testnet --source default -- set_admin --new_admin CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO
 
 # (add trustline to user)
 
 # Upgrade
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- upgrade --hash db2c14290d4964e3805f2527dd132939ba5fb3fccac56b30bfab8fd091011627
+stellar contract invoke --id CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO --network testnet --source default -- upgrade --hash db2c14290d4964e3805f2527dd132939ba5fb3fccac56b30bfab8fd091011627
 
 # Plant
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- plant --amount 0 --farmer default
+stellar contract invoke --id CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO --network testnet --source default -- plant --amount 0 --farmer default
 
 # Work
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- work --farmer default --nonce 746435291 --hash 0000000f98c4740b898b6584be9e9217f7137d28d45dccbf64c9abac8aafbfb9
+stellar contract invoke --id CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO --network testnet --source default -- work --farmer default --nonce 746435291 --hash 0000000f98c4740b898b6584be9e9217f7137d28d45dccbf64c9abac8aafbfb9
 
 # Harvest
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- harvest --index 0 --farmer default
+stellar contract invoke --id CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO --network testnet --source default -- harvest --index 0 --farmer default
 
 # Remove Block
-stellar contract invoke --id CCQLTKBVXU4IG2K3ZYRTC4IM5KT66U6MHKRVW77LLUKNYDZXVTIKA66A --network testnet --source default -- remove_block --index 0
+stellar contract invoke --id CDSWUUXGPWDZG76ISK6SUCVPZJMD5YUV66J2FXFXFGDX25XKZJIEITAO --network testnet --source default -- remove_block --index 0

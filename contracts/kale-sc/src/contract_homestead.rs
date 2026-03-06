@@ -55,7 +55,7 @@ impl HomesteadTrait for Contract {
     fn unpause(env: Env) {
         get_farm_homesteader(&env).require_auth();
 
-        if get_farm_paused(&env) {
+        if !get_farm_paused(&env) {
             panic_with_error!(&env, &Errors::FarmNotPaused);
         }
 
@@ -79,11 +79,12 @@ impl CustomAccountInterface for Contract {
     #[allow(non_snake_case)]
     fn __check_auth(
         env: Env,
-        _signature_payload: Hash<32>,
+        signature_payload: Hash<32>,
         _signatures: Option<Vec<Val>>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), Errors> {
-        get_farm_homesteader(&env).require_auth_for_args(vec![&env]);
+        // TODO this should likely have some value like the `signature_payload`. Maybe even checking a signature or auth context.
+        get_farm_homesteader(&env).require_auth_for_args(vec![&env, signature_payload.to_val()]);
 
         Ok(())
     }

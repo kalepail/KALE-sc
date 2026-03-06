@@ -3,7 +3,13 @@
 # Rust's output directory
 target
 
+# Bun / dotenv files
+.env
+.env.local
+.env.*.local
+
 # Local Soroban settings
 .soroban
+**/.stellar/
 
 test_snapshots
